@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
   
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Validator;
 use Hash;
 use Session;
 use App\Models\User;
-use App\Models\Student;
   
   
 class AuthController extends Controller
@@ -66,25 +64,22 @@ class AuthController extends Controller
   
     public function showFormRegister()
     {
-        if (Auth::check()) { // true sekalian session field di users nanti bisa dipanggil via Auth
-            //Login Success
-            return redirect()->route('home');
-        }
         return view('register');
     }
   
-    public function showStudentRegister()
-    {
-        
-        return view('addstudent');
-    }
-
     public function register(Request $request)
     {
         $rules = [
             'name'                  => 'required|min:3|max:35',
             'email'                 => 'required|email|unique:users,email',
             'password'              => 'required|confirmed',
+            'nisn'                  => 'required|unique',
+            'nis'                   => 'required|unique',
+            'kelas'                 => 'required',
+            'alamat'                => 'required',
+            'no_telp'               => 'required',
+            'id_spp'                => 'required|unique',
+            
         ];
   
         $messages = [
@@ -96,8 +91,15 @@ class AuthController extends Controller
             'email.unique'          => 'Email sudah terdaftar',
             'password.required'     => 'Password wajib diisi',
             'password.confirmed'    => 'Password tidak sama dengan konfirmasi password',
-            
-
+            'nisn.required'         => 'NISN wajib diisi',
+            'nisn.unique'           => 'NISN harus unik',
+            'nis.required'          => 'NIS wajib diisi',
+            'nis.unique'            => 'NIS harus unik',
+            'kelas.required'        => 'Kelas wajib diisi',
+            'alamat.required'       => 'Alamat wajib diisi',
+            'no_telp.required'      => 'No Telepon wajib diisi',
+            'id_spp.required'       => 'ID SPP',
+            'id_spp.unique  '       => 'ID SPP harus unik',
         ];
   
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -110,24 +112,21 @@ class AuthController extends Controller
         $user->name = ucwords(strtolower($request->name));
         $user->email = strtolower($request->email);
         $user->password = Hash::make($request->password);
-        $user->role = strtolower($request->role);
-        $user->status = "inactive";
+        $user->role = 'student';
         $user->email_verified_at = \Carbon\Carbon::now();
         $simpan = $user->save();
-  
-        // $student = new Student;
-        // $student->namalengkap = ucwords(strtolower($request->name));
-        // $student->nisn = $request->nisn;
-        // $student->nis = $request->nis;
-        // $student->alamat = $request->alamat;
-        // $student->id_kelas = $request->kelas;
-        // $student->id_spp = $request->id_spp;
-        // $student->not_telp = $request->no_telp;
-        // $simpan2 = $student->save();
 
+        $student = new Student;
+        $student->nisn = $request->nisn;
+        $student->nis = $request->nis;
+        $student->id_kelas = $request->id_kelas;
+        $student->alamat = $request->alamat;
+        $student->no_telp = $request->no_telp;
+        $student->id_spp = $request->id_spp;
+        $simpan2 = $student->save();
         if($simpan){
-            Session::flash('success', 'Register berhasil!');
-            return redirect()->route('login');
+            Session::flash('success', 'Penambahan data berhasil! ');
+            return redirect()->route('register');
         } else {
             Session::flash('errors', ['' => 'Register gagal! Silahkan ulangi beberapa saat lagi']);
             return redirect()->route('register');
@@ -138,11 +137,6 @@ class AuthController extends Controller
     {
         Auth::logout(); // menghapus session yang aktif
         return redirect()->route('login');
-    }
-
-    public function waiting()
-    {
-        return view('account-inactive');
     }
   
   

@@ -17,13 +17,14 @@ class StaffMiddleware
      */
      public function handle(Request $request, Closure $next)
      {
-         if(Auth::user()->role != "staff"){
+         if(Auth::user()->role == "staff" and Auth::user()->status == "active"){
              /* 
              silahkan modifikasi pada bagian ini
              apa yang ingin kamu lakukan jika rolenya tidak sesuai
              */
-             return redirect()->to('logout');
+            return $next($request); 
          }
-         return $next($request);
+         return redirect()->to('logout');
+         
      }
 }

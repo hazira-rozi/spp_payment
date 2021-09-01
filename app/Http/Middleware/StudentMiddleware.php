@@ -17,13 +17,19 @@ class StudentMiddleware
      */
      public function handle(Request $request, Closure $next)
      {
-         if(Auth::user()->role != "student"){
+         if(Auth::user()->role != "student") {
+            return redirect()->to('logout');
+            
+             
              /* 
              silahkan modifikasi pada bagian ini
              apa yang ingin kamu lakukan jika rolenya tidak sesuai
              */
-             return redirect()->to('logout');
-         }
+         } elseif(Auth::user()->status != "active"){
+                return redirect()->to('waiting');
+        } 
          return $next($request);
+         
+         
      }
 }
